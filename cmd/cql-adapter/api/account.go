@@ -17,6 +17,7 @@
 package api
 
 import (
+	"github.com/CovenantSQL/CovenantSQL/utils/log"
 	"net/http"
 
 	"github.com/CovenantSQL/CovenantSQL/client"
@@ -35,20 +36,28 @@ type accountAPI struct{}
 
 // StableCoinBalance defines query for stable coin balance.
 func (a *accountAPI) StableCoinBalance(rw http.ResponseWriter, r *http.Request) {
-	if balance, err := client.GetStableCoinBalance(); err != nil {
+	var balance uint64
+	var err error
+
+	if balance, err = client.GetStableCoinBalance(); err != nil {
 		sendResponse(http.StatusInternalServerError, false, err, nil, rw)
 	} else {
 		sendResponse(http.StatusOK, true, nil, map[string]interface{}{
 			"balance": balance,
 		}, rw)
 	}
+
+	log.WithField("stableBalance", balance).WithError(err).Debug("get stable coin balance")
 
 	return
 }
 
 // CovenantCoinBalance defines query for covenant coin balance.
 func (a *accountAPI) CovenantCoinBalance(rw http.ResponseWriter, r *http.Request) {
-	if balance, err := client.GetCovenantCoinBalance(); err != nil {
+	var balance uint64
+	var err error
+
+	if balance, err = client.GetCovenantCoinBalance(); err != nil {
 		sendResponse(http.StatusInternalServerError, false, err, nil, rw)
 	} else {
 		sendResponse(http.StatusOK, true, nil, map[string]interface{}{
@@ -56,5 +65,7 @@ func (a *accountAPI) CovenantCoinBalance(rw http.ResponseWriter, r *http.Request
 		}, rw)
 	}
 
+	log.WithField("covenantBalance", balance).WithError(err).Debug("get covenant coin balance")
+	
 	return
 }

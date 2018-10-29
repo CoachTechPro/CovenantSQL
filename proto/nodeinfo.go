@@ -114,7 +114,7 @@ func (id *NodeID) Difficulty() (difficulty int) {
 func (id *NodeID) ToRawNodeID() *RawNodeID {
 	idHash, err := hash.NewHashFromStr(string(*id))
 	if err != nil {
-		log.Errorf("error node id %s %s", *id, err)
+		log.WithField("id", *id).WithError(err).Error("error node id")
 		return nil
 	}
 	return &RawNodeID{*idHash}
@@ -141,7 +141,7 @@ func (node *Node) InitNodeCryptoInfo(timeThreshold time.Duration) (err error) {
 	nonce := asymmetric.GetPubKeyNonce(node.PublicKey, NewNodeIDDifficulty, timeThreshold, nil)
 	node.ID = NodeID(nonce.Hash.String())
 	node.Nonce = nonce.Nonce
-	log.Debugf("Node: %v", node)
+	log.Debugf("Node: %#v", node)
 	return
 }
 

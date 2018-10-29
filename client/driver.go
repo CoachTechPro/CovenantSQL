@@ -288,12 +288,12 @@ func runPeerListUpdater() (err error) {
 					if _, err = getPeers(dbID, privKey); err != nil {
 						log.WithField("db", dbID).
 							WithError(err).
-							Warningf("update peers failed")
+							Warning("update peers failed")
 
 						// TODO(xq262144), better rpc remote error judgement
 						if strings.Contains(err.Error(), bp.ErrNoSuchDatabase.Error()) {
 							log.WithField("db", dbID).
-								Warningf("remove database from peers auto update")
+								Warning("database no longer exists, stopped peers update")
 							peerList.Delete(dbID)
 						}
 					}
@@ -318,8 +318,18 @@ func stopPeersUpdater() {
 func cacheGetPeers(dbID proto.DatabaseID, privKey *asymmetric.PrivateKey) (peers *kayak.Peers, err error) {
 	var ok bool
 	var rawPeers interface{}
+	var cacheHit bool
+
+	defer func() {
+		log.WithFields(log.Fields{
+			"db":  dbID,
+			"hit": cacheHit,
+		}).WithError(err).Debug("cache get peers for database")
+	}()
+
 	if rawPeers, ok = peerList.Load(dbID); ok {
 		if peers, ok = rawPeers.(*kayak.Peers); ok {
+			cacheHit = true
 			return
 		}
 	}
@@ -331,6 +341,13 @@ func cacheGetPeers(dbID proto.DatabaseID, privKey *asymmetric.PrivateKey) (peers
 func getPeers(dbID proto.DatabaseID, privKey *asymmetric.PrivateKey) (peers *kayak.Peers, err error) {
 	req := new(bp.GetDatabaseRequest)
 	req.Header.DatabaseID = dbID
+
+	defer func() {
+		log.WithFields(log.Fields{
+			"db":    dbID,
+			"peers": peers,
+		}).WithError(err).Debug("get peers for database")
+	}()
 
 	if err = req.Sign(privKey); err != nil {
 		return

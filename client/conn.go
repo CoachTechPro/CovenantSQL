@@ -65,7 +65,7 @@ func newConn(cfg *Config) (c *conn, err error) {
 		queries: make([]wt.Query, 0),
 	}
 
-	log.WithField("db", c.dbID).Debug("new connection to database")
+	log.WithField("db", c.dbID).Debug("new connection")
 
 	// get peers from BP
 	if _, err = cacheGetPeers(c.dbID, c.privKey); err != nil {
@@ -120,6 +120,8 @@ func (c *conn) PrepareContext(ctx context.Context, query string) (driver.Stmt, e
 	if atomic.LoadInt32(&c.closed) != 0 {
 		return nil, driver.ErrBadConn
 	}
+
+	log.WithField("query", query).Debug("prepared statement")
 
 	// prepare the statement
 	return newStmt(c, query), nil
@@ -213,8 +215,19 @@ func (c *conn) addQuery(queryType wt.QueryType, query *wt.Query) (rows driver.Ro
 
 		// append queries
 		c.queries = append(c.queries, *query)
+
+		log.WithFields(log.Fields{
+			"pattern": query.Pattern,
+			"args":    query.Args,
+		}).Debug("add query to tx")
+
 		return
 	}
+
+	log.WithFields(log.Fields{
+		"pattern": query.Pattern,
+		"args":    query.Args,
+	}).Debug("execute query")
 
 	return c.sendQuery(queryType, []wt.Query{*query})
 }
@@ -228,6 +241,17 @@ func (c *conn) sendQuery(queryType wt.QueryType, queries []wt.Query) (rows drive
 	// allocate sequence
 	connID, seqNo := allocateConnAndSeq()
 	defer putBackConn(connID)
+
+	defer func() {
+		log.WithFields(log.Fields{
+			"count":  len(queries),
+			"type":   queryType.String(),
+			"connID": connID,
+			"seqNo":  seqNo,
+			"target": peers.Leader.ID,
+			"source": c.nodeID,
+		}).WithError(err).Debug("send query")
+	}()
 
 	// build request
 	req := &wt.Request{
@@ -281,7 +305,7 @@ func (c *conn) sendQuery(queryType wt.QueryType, queries []wt.Query) (rows drive
 
 	// send ack back
 	if err = pCaller.Call(route.DBSAck.String(), ack, &ackRes); err != nil {
-		log.Warningf("ack query failed: %v", err)
+		log.WithError(err).Warning("ack query failed")
 		err = nil
 	}
 

@@ -383,7 +383,7 @@ func TestQueryIndex(t *testing.T) {
 				); err != nil {
 					t.Fatalf("Error occurred: %v", err)
 				} else if !isKnown {
-					t.Fatalf("Unexpected result: block is known")
+					t.Fatal("Unexpected result: block is known")
 				}
 			}
 		}

@@ -18,6 +18,7 @@ package api
 
 import (
 	"encoding/json"
+	"github.com/CovenantSQL/CovenantSQL/utils/log"
 	"math"
 	"net/http"
 	"strconv"
@@ -61,12 +62,20 @@ func (a *adminAPI) CreateDatabase(rw http.ResponseWriter, r *http.Request) {
 	nodeCntStr := r.FormValue("node")
 	nodeCnt, err := strconv.Atoi(nodeCntStr)
 
+	var dbID string
+
+	defer func() {
+		log.WithFields(log.Fields{
+			"nodeCnt": nodeCnt,
+			"db":      dbID,
+		}).WithError(err).Debug("create database")
+	}()
+
 	if err != nil || nodeCnt <= 0 || nodeCnt >= math.MaxUint16 {
 		sendResponse(http.StatusBadRequest, false, "Invalid node count supplied", nil, rw)
 		return
 	}
 
-	var dbID string
 	if dbID, err = config.GetConfig().StorageInstance.Create(nodeCnt); err != nil {
 		sendResponse(http.StatusInternalServerError, false, err, nil, rw)
 		return
@@ -80,11 +89,16 @@ func (a *adminAPI) CreateDatabase(rw http.ResponseWriter, r *http.Request) {
 // DropDatabase defines drop database admin API.
 func (a *adminAPI) DropDatabase(rw http.ResponseWriter, r *http.Request) {
 	var dbID string
+	var err error
+
+	defer func() {
+		log.WithField("db", dbID).WithError(err).Debug("drop database")
+	}()
+
 	if dbID = getDatabaseID(rw, r); dbID == "" {
 		return
 	}
 
-	var err error
 	if err = config.GetConfig().StorageInstance.Drop(dbID); err != nil {
 		sendResponse(http.StatusInternalServerError, false, err, nil, rw)
 		return
