@@ -18,11 +18,11 @@ package twopc
 
 import (
 	"context"
-	"github.com/pkg/errors"
 	"sync"
 	"time"
 
 	"github.com/CovenantSQL/CovenantSQL/utils/log"
+	"github.com/pkg/errors"
 )
 
 // Hook are called during 2PC running

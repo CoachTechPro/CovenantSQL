@@ -17,10 +17,10 @@
 package api
 
 import (
-	"github.com/CovenantSQL/CovenantSQL/utils/log"
 	"net/http"
 
 	"github.com/CovenantSQL/CovenantSQL/client"
+	"github.com/CovenantSQL/CovenantSQL/utils/log"
 )
 
 func init() {
@@ -66,6 +66,6 @@ func (a *accountAPI) CovenantCoinBalance(rw http.ResponseWriter, r *http.Request
 	}
 
 	log.WithField("covenantBalance", balance).WithError(err).Debug("get covenant coin balance")
-	
+
 	return
 }

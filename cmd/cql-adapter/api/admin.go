@@ -18,12 +18,12 @@ package api
 
 import (
 	"encoding/json"
-	"github.com/CovenantSQL/CovenantSQL/utils/log"
 	"math"
 	"net/http"
 	"strconv"
 
 	"github.com/CovenantSQL/CovenantSQL/cmd/cql-adapter/config"
+	"github.com/CovenantSQL/CovenantSQL/utils/log"
 )
 
 func init() {

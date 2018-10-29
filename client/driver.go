@@ -25,17 +25,16 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/CovenantSQL/CovenantSQL/kayak"
-	"github.com/CovenantSQL/CovenantSQL/utils/log"
-
 	bp "github.com/CovenantSQL/CovenantSQL/blockproducer"
 	"github.com/CovenantSQL/CovenantSQL/conf"
 	"github.com/CovenantSQL/CovenantSQL/crypto"
 	"github.com/CovenantSQL/CovenantSQL/crypto/asymmetric"
 	"github.com/CovenantSQL/CovenantSQL/crypto/kms"
+	"github.com/CovenantSQL/CovenantSQL/kayak"
 	"github.com/CovenantSQL/CovenantSQL/proto"
 	"github.com/CovenantSQL/CovenantSQL/route"
 	"github.com/CovenantSQL/CovenantSQL/rpc"
+	"github.com/CovenantSQL/CovenantSQL/utils/log"
 	wt "github.com/CovenantSQL/CovenantSQL/worker/types"
 )
 
